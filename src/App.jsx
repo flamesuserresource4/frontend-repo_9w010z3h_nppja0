@@ -3,12 +3,17 @@ import HomeHeader from './components/HomeHeader'
 import AuthHero from './components/AuthHero'
 import FeatureGrid from './components/FeatureGrid'
 import AuthModal from './components/AuthModal'
+import Navbar from './components/Navbar'
+import Hero from './components/Hero'
 
 export default function App() {
   const [dark, setDark] = useState(false)
   const [authOpen, setAuthOpen] = useState(false)
   const [authMode, setAuthMode] = useState('login')
   const [user, setUser] = useState(null)
+
+  // Simple dashboard view state
+  const [enteredDashboard, setEnteredDashboard] = useState(false)
 
   useEffect(() => {
     const saved = localStorage.getItem('fintweet-theme')
@@ -22,6 +27,39 @@ export default function App() {
 
   const openLogin = () => { setAuthMode('login'); setAuthOpen(true) }
   const openSignup = () => { setAuthMode('signup'); setAuthOpen(true) }
+
+  // After auth success, show dashboard
+  const handleAuthSuccess = (u) => {
+    setUser(u)
+    setAuthOpen(false)
+    setEnteredDashboard(true)
+    // focus top
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  if (user && enteredDashboard) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900 text-slate-900 dark:text-slate-100">
+        <Navbar />
+        <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+          <Hero />
+          <section className="rounded-3xl border border-slate-200 dark:border-slate-800 p-6 bg-white/70 dark:bg-slate-900/70 backdrop-blur">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div>
+                <h2 className="text-xl font-semibold">Welcome back, {user.name || 'Investor'}</h2>
+                <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">You're signed in with {user.email}. Explore your dashboard.</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button onClick={() => setDark(v => !v)} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-800 px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-800/50">Toggle theme</button>
+                <button onClick={() => { setUser(null); setEnteredDashboard(false) }} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 text-white px-3 py-2 text-sm hover:bg-indigo-700">Sign out</button>
+              </div>
+            </div>
+          </section>
+          <FeatureGrid />
+        </main>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900 text-slate-900 dark:text-slate-100">
@@ -54,7 +92,6 @@ export default function App() {
                 <div className="mt-2 text-sm">
                   <p>Signed in as <span className="font-medium">{user.name}</span></p>
                   <p className="text-slate-600 dark:text-slate-300">{user.email}</p>
-                  <button onClick={() => setUser(null)} className="mt-3 inline-flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-800 px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-800/50">Sign out</button>
                 </div>
               ) : (
                 <div className="mt-2 text-sm text-slate-600 dark:text-slate-300">
@@ -71,7 +108,7 @@ export default function App() {
               <h3 className="font-medium">Why Fintweet?</h3>
               <ul className="mt-2 space-y-2 text-sm text-slate-600 dark:text-slate-300 list-disc pl-5">
                 <li>Clean UI with dark mode</li>
-                <li>Auto-refreshing market data</li>
+                <li>3D hero with interactive animation</li>
                 <li>AI-driven predictions and sentiment</li>
                 <li>Secure and privacy-minded</li>
               </ul>
@@ -88,7 +125,7 @@ export default function App() {
         open={authOpen}
         mode={authMode}
         onClose={() => setAuthOpen(false)}
-        onSuccess={(u) => setUser(u)}
+        onSuccess={handleAuthSuccess}
       />
     </div>
   )
